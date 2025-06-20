@@ -2,20 +2,27 @@ import PropTypes from 'prop-types';
 import Task from './Task.jsx';
 import './TaskList.css';
 
-const TaskList = (props) => {
-  const getTaskListJSX = props.tasks.map((task) => {
-    return (
-      <Task
-        key={task.id}
-        id={task.id}
-        title={task.title}
-        isComplete={task.isComplete}
-        onTask = {props.onTask}
-        onRemove = {props.onRemove}
-      />
-    );
-  });
-  return <ul className="tasks__list no-bullet">{getTaskListJSX}</ul>;
+const TaskList = ({ tasks, onToggleCompleteCallback, onDeleteCallback }) => {
+  const getTaskListJSX = (tasks) => {
+    return tasks.map((task) => {
+      return (
+        <Task
+          key={task.id}
+          id={task.id}
+          title={task.title}
+          isComplete={task.isComplete}
+          onToggleCompleteCallback={onToggleCompleteCallback}
+          onDeleteCallback={onDeleteCallback}
+        />
+      );
+    });
+  };
+
+  if (!tasks.length) {
+    return <div>All done!</div>;
+  }
+
+  return <ul className="tasks__list no-bullet">{getTaskListJSX(tasks)}</ul>;
 };
 
 TaskList.propTypes = {
@@ -26,8 +33,8 @@ TaskList.propTypes = {
       isComplete: PropTypes.bool.isRequired,
     })
   ).isRequired,
-  onTask: PropTypes.func.isRequired,
-  onRemove: PropTypes.func.isRequired,
+  onToggleCompleteCallback: PropTypes.func.isRequired,
+  onDeleteCallback: PropTypes.func.isRequired,
 };
 
 export default TaskList;

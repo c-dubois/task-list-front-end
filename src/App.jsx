@@ -1,41 +1,113 @@
+import { useState, useEffect } from 'react';
 import TaskList from './components/TaskList.jsx';
 import './App.css';
-import { useState } from 'react';
+import axios from 'axios';
+import NewTaskForm from './components/NewTaskForm.jsx';
 
-const TASKS = [
-  {
-    id: 1,
-    title: 'Mow the lawn',
-    isComplete: false,
-  },
-  {
-    id: 2,
-    title: 'Cook Pasta',
-    isComplete: true,
-  },
-];
+// read the base url from the .env file
+const kBaseUrl = import.meta.env.VITE_BASE_URL;
+
+const taskApiToJson = task => {
+  const { description, id, is_complete: isComplete, title } = task;
+  return { description, id, isComplete, title };
+};
+
+const getTasksAsync = async () => {
+  try {
+    const response = await axios.get(`${kBaseUrl}/tasks`);
+    return response.data.map(taskApiToJson);
+  } catch (err) {
+    console.log(err);
+    throw new Error('error fetching tasks');
+  }
+};
+
+const updateTaskAsync = async (id, markComplete) => {
+  const endpoint = markComplete ? 'mark_complete' : 'mark_incomplete';
+
+  try {
+    const response = await axios.patch(`${kBaseUrl}/tasks/${id}/${endpoint}`);
+    return taskApiToJson(response.data.task);
+  } catch (err) {
+    console.log(err);
+    throw new Error(`error updating task ${id}`);
+  }
+};
+
+const deleteTaskAsync = async id => {
+  try {
+    await axios.delete(`${kBaseUrl}/tasks/${id}`);
+  } catch (err) {
+    console.log(err);
+    throw new Error(`error deleting task ${id}`);
+  }
+};
+
+const addTaskAsync = async taskData => {
+  const { title, isComplete } = taskData;
+  const description = 'created in Task List Front End';
+  const completedAt = isComplete ? new Date() : null;
+  const body = { title, description, 'completed_at': completedAt };
+
+  try {
+    const response = await axios.post(`${kBaseUrl}/tasks`, body);
+    return taskApiToJson(response.data.task);
+  } catch (err) {
+    console.log(err);
+    throw new Error('error creating task');
+  }
+};
 
 const App = () => {
-  const [taskData, setTaskData] = useState(TASKS);
+  const [tasks, setTasks] = useState([]);
 
-  const toggleCompleteTask = (id) => {
-    setTaskData(taskData => {
-      return taskData.map(task => {
-        if (task.id === id) {
-          return {...task, isComplete: !task.isComplete};
-        } else {
-          return task;
-        }
-      });
-    });
+  useEffect(() => {
+    refreshTasks();
+  }, []);
+
+  const refreshTasks = async () => {
+    try {
+      const tasks = await getTasksAsync();
+      setTasks(tasks);
+    } catch (err) {
+      console.log(err.message);
+    }
   };
 
-  const deleteTask = (id) => {
-    setTaskData(taskData => {
-      return taskData.filter(task => {
-        return task.id !== id;
-      });
-    });
+  const updateTask = async id => {
+    const task = tasks.find(task => task.id === id);
+    if (!task) return;
+
+    try {
+      const newTask = await updateTaskAsync(id, !task.isComplete);
+      setTasks(oldTasks =>
+        oldTasks.map(task =>
+          task.id === newTask.id ? newTask : task
+        )
+      );
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
+  const deleteTask = async id => {
+    try {
+      await deleteTaskAsync(id);
+      setTasks(oldTasks =>
+        oldTasks.filter(task => task.id !== id)
+      );
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
+  const addTask = async taskData => {
+    try {
+      const task = await addTaskAsync(taskData);
+      setTasks(oldTasks => [...oldTasks, task]);
+    } catch (err) {
+      console.log(err.message);
+    }
   };
 
   return (
@@ -44,7 +116,16 @@ const App = () => {
         <h1>Ada&apos;s Task List</h1>
       </header>
       <main>
-        <div>{<TaskList tasks={taskData} onTask={toggleCompleteTask} onRemove={deleteTask}/>}</div>
+        <div>
+          <TaskList
+            tasks={tasks}
+            onToggleCompleteCallback={updateTask}
+            onDeleteCallback={deleteTask}
+          />
+        </div>
+        <div>
+          <NewTaskForm onAddTaskCallback={addTask} />
+        </div>
       </main>
     </div>
   );
