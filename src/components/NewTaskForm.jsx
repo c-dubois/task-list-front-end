@@ -1,38 +1,53 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
+import './NewTaskForm.css';
+
+const kDefaultFormState = {
+  title: '',
+  description: '',
+  completed: false,
+};
 
 const NewTaskForm = ({ onPostTask }) => {
-  const [title, setTitle] = useState('');
+  const [formData, setFormData] = useState(kDefaultFormState);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log('handleSubmit called');
-    const newTask = {
-      title,
-      completed: false,
-      description: '',
-    };
-    console.log('New task from form:', newTask);
-    onPostTask(newTask);
-    setTitle('');
+
+    onPostTask(formData);
+    setFormData(kDefaultFormState);
   };
 
   const handleChange = (event) => {
-    setTitle(event.target.value);
+    const inputName = event.target.name;
+    const inputValue = event.target.value;
+    setFormData((formData) => {
+      return {
+        ...formData,
+        [inputName]: inputValue,
+      };
+    });
+  };
+  const makeControlledInput = (inputName) => {
+    return <input
+      onChange={handleChange}
+      type="text"
+      name={inputName}
+      value={formData[inputName]}
+      placeholder={inputName.charAt(0).toUpperCase() + inputName.slice(1)}
+      className="task-input"
+    />;
   };
 
   return (
     <form onSubmit={handleSubmit} className="new-task-form">
       <div>
-        <label htmlFor='input-name'>Task Title: </label>
-        <input
-          type="text"
-          value={title}
-          id='input-name'
-          onChange={handleChange}
-          placeholder="New task"
-          className="task-input"
-        />
+        <label htmlFor='input-title'>Task Title: </label>
+        { makeControlledInput('title') }
+      </div>
+      <div>
+        <label htmlFor='input-description'>Task Description: </label>
+        { makeControlledInput('description') }
       </div>
       <div>
         <button type="submit" className="add-task-button">Add Task</button>
