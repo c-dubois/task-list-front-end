@@ -24,13 +24,13 @@ You may also use your deployed version of Task List API. If you are using your o
 
 We can see a summary of the API endpoints that we will work with for the front end features below:
 
-| Verb  | Path  | Body of Request | What it does  |
-|---|---|---|---|
-| `GET`  | `/tasks`  | None | Retrieves a list of tasks  |
-| `PATCH`  | `/tasks/<task_id>/mark_complete`  | None  | Marks a task complete   |
-| `PATCH`  | `/tasks/<task_id>/mark_incomplete`  | None  | Marks a task incomplete   |
-| `POST`  | `/tasks`  | `{ title: titleText, description: '' }` <br> optional key: `completed_at: (date or null)`  | Creates a new Task   |
-| `DELETE`  | `/tasks/<task_id>`  | None  | Deletes a task |
+| Verb     | Path                               | Body of Request                                                                           | What it does              |
+| -------- | ---------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------- |
+| `GET`    | `/tasks`                           | None                                                                                      | Retrieves a list of tasks |
+| `PATCH`  | `/tasks/<task_id>/mark_complete`   | None                                                                                      | Marks a task complete     |
+| `PATCH`  | `/tasks/<task_id>/mark_incomplete` | None                                                                                      | Marks a task incomplete   |
+| `POST`   | `/tasks`                           | `{ title: titleText, description: '' }` <br> optional key: `completed_at: (date or null)` | Creates a new Task        |
+| `DELETE` | `/tasks/<task_id>`                 | None                                                                                      | Deletes a task            |
 
 ### Cross-Origin Resource Sharing (CORS)
 

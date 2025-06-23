@@ -75,20 +75,27 @@ const App = () => {
   };
 
   const updateTask = async id => {
-    const task = tasks.find(task => task.id === id);
+    // шаг 1: локально переворачиваем isComplete, чтобы сразу отразилось
+    setTasks((oldTasks) =>
+      oldTasks.map((task) =>
+        task.id === id
+          ? { ...task, isComplete: !task.isComplete }
+          : task
+      )
+    );
+
+    // шаг 2: отправляем на сервер
+    const task = tasks.find((t) => t.id === id);
     if (!task) return;
 
     try {
-      const newTask = await updateTaskAsync(id, !task.isComplete);
-      setTasks(oldTasks =>
-        oldTasks.map(task =>
-          task.id === newTask.id ? newTask : task
-        )
-      );
+      await updateTaskAsync(id, !task.isComplete); // передаём новое значение
     } catch (err) {
       console.log(err.message);
+      // (необязательно) можно отменить визуальное изменение, если API не сработал
     }
   };
+
 
   const deleteTask = async id => {
     try {
